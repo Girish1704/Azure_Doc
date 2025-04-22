@@ -33,45 +33,114 @@ Creating a Virtual Machine (VM) in Azure can be done using multiple methods depe
 
 ## 1️⃣ Using Azure Portal (GUI)
 
-Creating a VM via Azure Portal is the most user-friendly method, especially for beginners. It provides a step-by-step UI for setting up your VM.
+---
 
-### 🪜 Steps to Create a VM via Portal:
+## 1️⃣ Using Azure Portal (GUI)
 
-1. **Login** to [Azure Portal](https://portal.azure.com/)
-2. In the search bar, type **"Virtual Machines"** and select it.
-3. Click on **“+ Create”** → **“Azure virtual machine”**
-
-   ![Create VM](https://learn.microsoft.com/en-us/azure/virtual-machines/media/windows/quick-create-portal/overview.png)
-
-4. **Basics tab**: Fill in the following details:
-   - **Subscription**: Choose your subscription
-   - **Resource Group**: Create new or use existing
-   - **Virtual machine name**: e.g., `MyVM`
-   - **Region**: Select a nearby region (e.g., Central India)
-   - **Image**: Choose OS (e.g., Windows Server 2022)
-   - **Size**: Click “Change size” and select preferred VM size
-   - **Username & Password**: Set admin credentials
-
-5. **Disks tab**: Choose Standard SSD or Premium SSD depending on performance needs.
-
-6. **Networking tab**: 
-   - Keep defaults or create a new virtual network and subnet
-   - Select “Public IP” to allow internet access
-
-7. **Management, Monitoring, and Advanced**: Leave default (optional settings)
-
-8. **Review + create**: Validate your settings
-
-   ![Review and Create](https://learn.microsoft.com/en-us/azure/virtual-machines/media/windows/quick-create-portal/review-create.png)
-
-9. Click **Create** to deploy your VM 🎉
-
-### 🧠 Tips:
-- You can use **Tags** to organize your VM
-- Use **Availability Zones** for redundancy
-- Enable **Boot diagnostics** under Monitoring tab for debugging
+Creating a VM via Azure Portal is the most user-friendly method, especially for beginners. It provides a guided interface to configure and launch a VM easily.
 
 ---
 
-✅ Once deployed, you’ll see the VM listed in your “Virtual Machines” section. Click on it to view the dashboard and connect via RDP or SSH.
+### 🪜 Steps to Create a VM via Azure Portal:
 
+#### 🔹 Step 1: Login & Open VM Section
+
+1. Go to the [Azure Portal](https://portal.azure.com/)
+2. In the top search bar, type **"Virtual Machines"** and select it  
+   ![VM Screenshot](Images/1.jpg)  
+   ![VM Screenshot](Images/2.jpg)
+
+3. Click **+ Create** → **Azure Virtual Machine**  
+   ![VM Screenshot](Images/3.jpg)
+
+---
+
+### 🧾 Step 2: Fill in the Basics Tab
+
+This section captures the core configuration of your VM:
+
+#### 🧩 Basic Settings:
+- **Subscription:** Choose your active subscription  
+- **Resource Group:** Create new or select existing  
+- **VM Name:** Example – `MyVM`  
+- **Region:** Choose a nearby region (e.g., South India)  
+- **Availability Options:** Leave default unless needed  
+- **Security Type:** Keep as "Standard"  
+- **Image:** Choose your OS (e.g., Windows Server 2022)  
+- **Architecture:** Select `x64`  
+![VM Screenshot](Images/4.jpg)
+
+---
+
+### 🧑‍💻 Step 3: VM Size & Admin Credentials
+
+- **Size:** Click “Change size” → Select `Standard_B1ms` (1 vCPU, 2 GiB RAM)  
+- **Username:** Enter your admin name (e.g., `Girish`)  
+- **Password:** Enter and confirm a strong password  
+- **Public Ports:** Select `Allow selected ports` → Choose **RDP (3389)**  
+![VM Screenshot](Images/5.jpg)
+
+---
+
+### 💽 Step 4: Configure the OS Disk
+
+- **OS Disk Size:** Leave default or choose custom  
+- **OS Disk Type:** Choose `Standard SSD` (LRS)  
+- **Delete with VM:** Keep it checked  
+- **Key Management:** Leave as `Platform-managed`  
+![VM Screenshot](Images/6.jpg)
+
+---
+
+### 🌐 Step 5: Configure the Network Interface
+
+- **Virtual Network:** Select existing or create new  
+- **Public IP:** Auto-assign or create new  
+- **NIC Network Security Group (NSG):**
+  - `None`: No access
+  - `Basic`: Default recommended
+  - `Advanced`: Custom rules  
+- **Inbound Ports:** Choose:
+  - `None` (no internet access)
+  - ✅ `Allow selected ports` → Select **RDP (3389)** or **SSH (22)**  
+![VM Screenshot](Images/7.jpg)
+
+---
+
+### 🧾 Step 6: Review + Create
+
+- Click on **Review + Create**  
+![VM Screenshot](Images/8.jpg)
+
+- Azure validates all settings – if successful, you’ll see:  
+  ✅ **Validation Passed**  
+  💸 Estimated pricing (e.g., `2.0466 INR/hr`)  
+![VM Screenshot](Images/9.jpg)
+
+---
+
+### 🚀 Step 7: Launch the Deployment
+
+- Click **Create** to start the VM deployment  
+![VM Screenshot](Images/10.jpg)
+
+- Deployment may take 1–2 minutes
+
+---
+
+## 🧠 Tips & Best Practices
+
+✅ Use **Tags** to organize your resources  
+✅ Enable **Availability Zones** for high availability  
+✅ Turn on **Boot Diagnostics** under Monitoring tab for better debugging
+
+---
+
+### 🎉 Deployment Complete!
+
+You can now:
+- View the VM in the **“Virtual Machines”** blade
+- Use **RDP** (Windows) or **SSH** (Linux) to connect
+- Start/stop/manage it anytime via Azure Portal
+
+---
