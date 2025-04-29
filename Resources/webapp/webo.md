@@ -13,6 +13,8 @@
 5. [Troubleshooting](#troubleshooting)
 6. [Conclusion](#conclusion)
 
+---
+
 ## Introduction
 This document provides a step-by-step guide on how to create a web app in Azure. Azure App Service is a fully managed platform as a service (PaaS) that enables you to build, deploy, and scale web applications.
 
@@ -47,7 +49,7 @@ If you don't already have an Azure account, you can sign up for a free account [
 ### 3. Create a Web App
 
    ![VM Screenshot](images/1.png)  
-   
+
 - Go to [Azure Portal](https://portal.azure.com/)
 - Click on "Sign in" and enter your credentials
 - Once logged in, find the search bar at the top
@@ -55,7 +57,7 @@ If you don't already have an Azure account, you can sign up for a free account [
 - Take a screenshot of this area for your documentation
 
    ![VM Screenshot](images/2.png)
-  
+
 - **Search for "App Services"**:
   - Use the search bar at the top of the Azure portal.
   - Type "app" to filter services.
@@ -66,16 +68,18 @@ If you don't already have an Azure account, you can sign up for a free account [
   - Follow the on-screen instructions to create your web app.
  
    ![VM Screenshot](images/3.png)
+
 - **Navigate to App Services**: Go to the App Services section in the Azure portal.
 - **Create a New App Service**: Click on the "Create" button to start the process.
 
- 
    ![VM Screenshot](images/4.png)
+
 - **Create a Web App**:
   - In the Azure portal, navigate to App Services.
   - Click on "Create" and select "Web App" from the dropdown menu.
 
    ![VM Screenshot](images/5.png)
+
 ## Selecting Subscription and Resource Group
 
 When creating a web app in Azure, you need to specify a subscription and a resource group to manage your resources effectively. Here's how you can do it:
@@ -94,6 +98,7 @@ When creating a web app in Azure, you need to specify a subscription and a resou
 By following these steps, you ensure that your web app is properly organized within your Azure environment, making it easier to manage and maintain.
 
    ![VM Screenshot](images/6.png)
+
 ## Configuring Instance Details for a Web App
 
 When setting up a new web app in Azure, you'll need to configure the instance details. This includes specifying the name, publish method, and runtime stack. Here's how to do it:
@@ -113,14 +118,14 @@ When setting up a new web app in Azure, you'll need to configure the instance de
 
 By configuring these settings, you ensure that your web app is set up correctly to meet your development and deployment needs.
 
-
    ![VM Screenshot](images/7.png)
+
 ## Selecting a Runtime Stack
 
 When configuring your web app in Azure, you'll need to choose a runtime stack that matches your application's requirements.
 
-
    ![VM Screenshot](images/8.png)
+
 ## Setting Up Web App Configuration
 
 To properly configure your web app in Azure, you need to select an operating system and a region:
@@ -135,8 +140,8 @@ To properly configure your web app in Azure, you need to select an operating sys
 
 Note: If you don't see your App Service Plan, consider trying a different region or checking your App Service Environment settings.
 
-
    ![VM Screenshot](images/9.png)
+
 ## Configuring Pricing Plans for Azure Web App
 
 To configure the pricing plan for your web app in Azure, follow these steps:
@@ -149,10 +154,8 @@ To configure the pricing plan for your web app in Azure, follow these steps:
    - Select the pricing plan that fits your app's requirements.
    - The example shows the selection of "Basic B1" which includes 100 total ACU, 1.75 GB memory, and 1 vCPU.
 
-
-
-
    ![VM Screenshot](images/10.png)
+
 ## Selecting an App Service Plan
 
 When configuring your Azure web app, you need to choose an App Service plan that fits your needs. Here are some popular options:
@@ -183,8 +186,8 @@ When configuring your Azure web app, you need to choose an App Service plan that
 
 Choose the plan that best matches your app's performance and budget requirements.
 
-
    ![VM Screenshot](images/11.png)
+
 ## Configuring Zone Redundancy
 
 Zone redundancy provides high availability for your Azure App Service plan by deploying it across multiple zones within a region:
@@ -199,8 +202,8 @@ Zone redundancy provides high availability for your Azure App Service plan by de
 
 **Note**: Enabling zone redundancy ensures high availability but may increase costs due to the minimum instance count requirement.
 
-
    ![VM Screenshot](images/12.png)
+
 ## Navigation Options in Azure Web App Creation
 
 During the setup of an Azure web app, you will encounter several navigation options:
@@ -214,8 +217,8 @@ During the setup of an Azure web app, you will encounter several navigation opti
 3. **Next: Database**: 
    - This button takes you to the next step, which involves setting up a database for your web app.
 
-
    ![VM Screenshot](images/13.png)
+
 ## Database Configuration in Azure Web App
 
 When setting up a web app in Azure, you have the option to create a database:
@@ -226,11 +229,7 @@ When setting up a web app in Azure, you have the option to create a database:
 
 This step is part of the process where you can configure additional resources for your web application in Azure.
 
-
-
-
    ![VM Screenshot](images/14.png)
-
 
 ## Setting Up a Database in Azure
 
@@ -253,10 +252,7 @@ To configure a database for your Azure web app, follow these steps:
 
 These steps will guide you through the process of setting up a database that can be used with your Azure web app.
 
-
-
    ![VM Screenshot](images/15.png)
-
 
 ## Setting Up Azure Cache for Redis
 
@@ -273,10 +269,7 @@ To create an Azure Cache for Redis as part of your web app configuration, follow
 
 These settings will configure a Redis cache that can be used to enhance your web app's performance.
 
-
-
    ![VM Screenshot](images/16.png)
-
 
 ## Continuous Deployment Settings
 
@@ -288,9 +281,7 @@ To configure continuous deployment for your Azure web app:
 
 By enabling this feature, you can automate the deployment process, ensuring that changes in your repository are automatically deployed to your web app.
 
-
    ![VM Screenshot](images/17.png)
-
 
 ## GitHub Deployment Settings
 
@@ -307,10 +298,7 @@ To set up continuous deployment from a GitHub repository in Azure:
 
 These settings ensure that your Azure web app is updated automatically with the latest code from your specified GitHub repository and branch.
 
-
-
    ![VM Screenshot](images/18.png)
-
 
 ## Final Step: Review and Create Web App
 
@@ -329,9 +317,7 @@ Before creating your web app in Azure, review your configurations and then proce
 
 This step finalizes the creation process and initiates the deployment of your web app in Azure.
 
-
    ![VM Screenshot](images/19.png)
-   
 
 ## Review Web App Configuration
 
@@ -346,18 +332,15 @@ Before creating your web app, review the configuration details:
 
 Confirm the details and proceed with the creation of your web app.
 
-
    ![VM Screenshot](images/20.png)
-   
+
 ## Final Step: Create Web App
 
 - **Create Button**: Click the "Create" button to initiate the deployment of your web app.
 - **Previous Step**: Use the "< Previous" button to return to the previous configuration step if needed.
 - **Next Step**: After creation, the "Next >" button will lead you to additional setup options.
 
-
    ![VM Screenshot](images/21.png)
-
 
 ## Deployment Process
 
@@ -368,9 +351,7 @@ Confirm the details and proceed with the creation of your web app.
 
 The deployment details can be viewed for more information on the progress and status of the deployment.
 
-
    ![VM Screenshot](images/22.png)
-   
 
 ## Deployment Completion
 
@@ -381,10 +362,7 @@ The deployment details can be viewed for more information on the progress and st
 
 You can now navigate to the resource to view your deployed web app.
 
-
-
    ![VM Screenshot](images/23.png)
-
 
 ## Web App Deployment Details
 
@@ -397,7 +375,6 @@ This information provides an overview of the web app's configuration in Azure.
 
 
    ![VM Screenshot](images/24.png)
-
 
 ## Web App Status
 
