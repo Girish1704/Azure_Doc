@@ -349,26 +349,61 @@ Confirm the details and proceed with the creation of your web app.
 
    ![VM Screenshot](images/20.png)
    
+## Final Step: Create Web App
 
+- **Create Button**: Click the "Create" button to initiate the deployment of your web app.
+- **Previous Step**: Use the "< Previous" button to return to the previous configuration step if needed.
+- **Next Step**: After creation, the "Next >" button will lead you to additional setup options.
 
 
    ![VM Screenshot](images/21.png)
 
 
+## Deployment Process
 
+- **Status**: Deployment is currently in progress.
+- **Deployment Name**: Microsoft.Web-WebApp-Portal-e87126e2-8283
+- **Subscription**: Innova8 Training
+- **Resource Group**: girish.giri7
+
+The deployment details can be viewed for more information on the progress and status of the deployment.
 
 
    ![VM Screenshot](images/22.png)
    
 
+## Deployment Completion
 
+- **Status**: Your deployment is complete.
+- **Deployment Name**: Microsoft.Web-WebApp-Portal-e87126e2-8283
+- **Subscription**: Innova8 Training
+- **Resource Group**: girish.giri17
+
+You can now navigate to the resource to view your deployed web app.
 
 
 
    ![VM Screenshot](images/23.png)
 
 
+## Web App Deployment Details
 
+- **Default Domain**: giriwebo-a9hub8gjdxdvbucx.centralus-01.azurewebsites.net
+- **App Service Plan**: gg (B1: 1)
+- **Operating System**: Linux
+- **Health Check**: Not Configured
+
+This information provides an overview of the web app's configuration in Azure.
 
 
    ![VM Screenshot](images/24.png)
+
+
+## Web App Status
+
+- **Web App Status**: Your web app is running and waiting for your content.
+- **Content Deployment**: If you've already deployed, it may take up to 5 minutes for the content to appear.
+- **Built With**: The app is built with Python.
+- **Next Steps**:
+  - Use the [Deployment center](#) to publish code or set up continuous deployment.
+  - Follow the [Quickstart](#) guide to quickly get your web app ready.
