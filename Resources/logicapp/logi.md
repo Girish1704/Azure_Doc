@@ -25,9 +25,8 @@ Before you begin, ensure you have the following:
 
    ![Access Logic Apps in Azure Portal](images/1.png)
 
-1. In the Azure portal, click on the **+ Create a resource** button.
-2. Search for **Logic Apps** in the search bar as indicated by the number **1** in the image.
-3. Click on **Logic apps** from the list of services as highlighted by the number **2**.
+1. Search for **Logic Apps** in the search bar as indicated by the number **1** in the image.
+2. Click on **Logic apps** from the list of services as highlighted by the number **2**.
 
 ### Step 3: Create a New Logic App
 
