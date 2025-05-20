@@ -6,6 +6,8 @@ Azure Logic Apps is a cloud-based integration service that helps you automate an
 
 This document provides a step-by-step guide on how to create a Logic App in Azure, covering the essential steps and considerations to help you get started quickly.
 
+
+
 ## Prerequisites
 
 Before you begin, ensure you have the following:
