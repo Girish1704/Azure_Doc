@@ -13,11 +13,6 @@ Before you begin, ensure you have the following prerequisites in place:
 ## Setup
 ### Create a Function App
 
-   **Using VS CODE STUDIO**:
-   
-   ![VM Screenshot](images/1.png)
- 
-   # Visual Studio Code Setup
 
 
    1. Download and install Visual Studio Code from [official site](https://code.visualstudio.com/).
