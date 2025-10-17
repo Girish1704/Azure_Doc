@@ -1,157 +1,253 @@
+<# =====================================================================
+  lab1_power.ps1
+  Purpose  : First-boot provisioning for CloudLabs jump VM
+  Notes    : - Prefers Service Principal auth if provided
+             - Falls back to user credential auth
+             - Downloads common helpers & lab files
+             - Leaves clear breadcrumbs in transcript
+  ===================================================================== #>
+
 Param (
     [Parameter(Mandatory = $true)]
-    [string]
-    $AzureUserName,
+    [string] $AzureUserName,
 
-    [string]
-    $AzurePassword,
+    [string] $AzurePassword,
 
-    [string]
-    $AzureTenantID,
+    [string] $AzureTenantID,
 
-    [string]
-    $AzureSubscriptionID,
+    [string] $AzureSubscriptionID,
 
-    [string]
-    $ODLID,
+    [string] $ODLID,
 
-    [string]
-    $InstallCloudLabsShadow,
+    [string] $InstallCloudLabsShadow,
 
-    [string]
-    $DeploymentID,
+    [string] $DeploymentID,
 
-    [string]
-    $vmAdminUsername,
+    [string] $vmAdminUsername,
 
-    [string]
-    $vmAdminPassword,
+    [string] $vmAdminPassword,
 
-    [string]
-    $trainerUserName,
+    [string] $trainerUserName,
 
-    [string]
-    $trainerUserPassword,
+    [string] $trainerUserPassword,
 
-    [string]
-    $spAppId,
+    [string] $spAppId,
     
-    [string]
-    $spAppSecret
+    [string] $spAppSecret
 )
 
-Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -Append
-[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls
-[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
+# =========================
+#   Section: Prep & Logging
+# =========================
+$ErrorActionPreference = 'Stop'
 
-Function CreateCredFile($AzureUserName, $AzurePassword, $AzureTenantID, $AzureSubscriptionID, $DeploymentID)
-{
-    $WebClient = New-Object System.Net.WebClient
-    $WebClient.DownloadFile("https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/AzureCreds.txt","C:\LabFiles\AzureCreds.txt")
-    $WebClient.DownloadFile("https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/AzureCreds.ps1","C:\LabFiles\AzureCreds.ps1")
-    
-    New-Item -ItemType directory -Path C:\LabFiles -force
+# Ensure log folder exists BEFORE transcript
+$newLogDir = 'C:\WindowsAzure\Logs'
+if (-not (Test-Path $newLogDir)) { New-Item -ItemType Directory -Path $newLogDir -Force | Out-Null }
+Start-Transcript -Path "$newLogDir\CloudLabsCustomScriptExtension.txt" -Append
 
-    (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "AzureUserNameValue", "$AzureUserName"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "AzurePasswordValue", "$AzurePassword"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "AzureTenantIDValue", "$AzureTenantID"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "AzureSubscriptionIDValue", "$AzureSubscriptionID"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.txt") | ForEach-Object {$_ -Replace "DeploymentIDValue", "$DeploymentID"} | Set-Content -Path "C:\LabFiles\AzureCreds.txt"
-             
-    (Get-Content -Path "C:\LabFiles\AzureCreds.ps1") | ForEach-Object {$_ -Replace "AzureUserNameValue", "$AzureUserName"} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.ps1") | ForEach-Object {$_ -Replace "AzurePasswordValue", "$AzurePassword"} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.ps1") | ForEach-Object {$_ -Replace "AzureTenantIDValue", "$AzureTenantID"} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.ps1") | ForEach-Object {$_ -Replace "AzureSubscriptionIDValue", "$AzureSubscriptionID"} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
-    (Get-Content -Path "C:\LabFiles\AzureCreds.ps1") | ForEach-Object {$_ -Replace "DeploymentIDValue", "$DeploymentID"} | Set-Content -Path "C:\LabFiles\AzureCreds.ps1"
-
-    Copy-Item "C:\LabFiles\AzureCreds.txt" -Destination "C:\Users\Public\Desktop"
+Function Write-Section([string]$msg) {
+    Write-Host ""
+    Write-Host "========== $msg ==========" -ForegroundColor Cyan
 }
 
-CreateCredFile $AzureUserName $AzurePassword $AzureTenantID $AzureSubscriptionID $DeploymentID
+Function Invoke-Retry {
+    param(
+        [Parameter(Mandatory=$true)][ScriptBlock]$Script,
+        [int]$Retries = 3,
+        [int]$DelaySeconds = 3
+    )
+    for ($i = 1; $i -le $Retries; $i++) {
+        try {
+            return & $Script
+        } catch {
+            if ($i -ge $Retries) { throw }
+            Write-Warning "Attempt $i failed: $($_.Exception.Message). Retrying in $DelaySeconds sec…"
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+}
 
-#Import Common Functions
-$path = pwd
-$path=$path.Path
-$commonscriptpath = "$path" + "\cloudlabs-common\cloudlabs-windows-functions.ps1"
-. $commonscriptpath
+# Force TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
-#Create C:\CloudLabs
-New-Item -ItemType directory -Path C:\CloudLabs -Force
+# Ensure base folders exist up-front
+Write-Section "Create base folders"
+$pathsToEnsure = @(
+    'C:\LabFiles',
+    'C:\CloudLabs',
+    'C:\AllFiles',
+    'C:\CloudLabs\Common',
+    'C:\Users\Public\Documents'
+)
+foreach ($p in $pathsToEnsure) { New-Item -ItemType Directory -Path $p -Force | Out-Null }
 
-# Run Imported functions from cloudlabs-windows-functions.ps1
+# ==================================
+#   Section: AzureCreds file & PS1
+# ==================================
+Write-Section "Create AzureCreds files"
+$credsTxt = 'C:\LabFiles\AzureCreds.txt'
+$credsPs1 = 'C:\LabFiles\AzureCreds.ps1'
+
+Invoke-Retry -Script {
+    $wc = New-Object System.Net.WebClient
+    $wc.DownloadFile("https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/AzureCreds.txt", $credsTxt)
+    $wc.DownloadFile("https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/AzureCreds.ps1", $credsPs1)
+}
+
+(Get-Content $credsTxt).
+    Replace("AzureUserNameValue",   $AzureUserName).
+    Replace("AzurePasswordValue",   $AzurePassword).
+    Replace("AzureTenantIDValue",   $AzureTenantID).
+    Replace("AzureSubscriptionIDValue", $AzureSubscriptionID).
+    Replace("DeploymentIDValue",    $DeploymentID) | Set-Content $credsTxt
+
+(Get-Content $credsPs1).
+    Replace("AzureUserNameValue",   $AzureUserName).
+    Replace("AzurePasswordValue",   $AzurePassword).
+    Replace("AzureTenantIDValue",   $AzureTenantID).
+    Replace("AzureSubscriptionIDValue", $AzureSubscriptionID).
+    Replace("DeploymentIDValue",    $DeploymentID) | Set-Content $credsPs1
+
+Copy-Item $credsTxt -Destination "C:\Users\Public\Desktop" -Force
+
+# ================================
+#   Section: Common helper import
+# ================================
+Write-Section "Fetch & import CloudLabs common functions"
+
+$commonScript = "C:\CloudLabs\Common\cloudlabs-windows-functions.ps1"
+if (-not (Test-Path $commonScript)) {
+    Invoke-Retry -Script {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile("https://experienceazure.blob.core.windows.net/templates/cloudlabs-common/cloudlabs-windows-functions.ps1", $commonScript)
+    }
+}
+
+. $commonScript
+
+# Base server hygiene + tooling
+Write-Section "Apply WindowsServerCommon; install Az PowerShell & Azure CLI"
 WindowsServerCommon
 InstallAzPowerShellModule
 InstallAzCLI
 
-
-#Download git repository
-New-Item -ItemType directory -Path C:\AllFiles
-$WebClient = New-Object System.Net.WebClient
-$WebClient.DownloadFile("https://github.com/CloudLabs-MOC/mslearn-openai/archive/refs/heads/main.zip","C:\AllFiles\AllFiles.zip")
-#unziping folder
-function Expand-ZIPFile($file, $destination)
-{
-$shell = new-object -com shell.application
-$zip = $shell.NameSpace($file)
-foreach($item in $zip.items())
-{
-$shell.Namespace($destination).copyhere($item)
-}
-}
-Expand-ZIPFile -File "C:\AllFiles\AllFiles.zip" -Destination "C:\AllFiles\"
-
-sleep 5
-
-
-.C:\LabFiles\AzureCreds.ps1
-
-$userName = $AzureUserName
-$password = $AzurePassword
-$subscriptionId = $AzureSubscriptionID
-$TenantID = $AzureTenantID
-$DeploymentID = $DeploymentID
-
-# --- Auth: Prefer Service Principal via params or env, else fallback to user creds ---
-$effectiveAppId     = if ($spAppId) { $spAppId } elseif ($env:AppID) { $env:AppID } else { $null }
-$effectiveAppSecret = if ($spAppSecret) { $spAppSecret } elseif ($env:AppSecret) { $env:AppSecret } else { $null }
-$effectiveTenantId  = if ($AzureTenantID) { $AzureTenantID } elseif ($env:TenantID) { $env:TenantID } else { $null }
-
-if ($effectiveAppId -and $effectiveAppSecret -and $effectiveTenantId) {
-    Write-Host "Authenticating with Service Principal..."
-    $spnSecure = $effectiveAppSecret | ConvertTo-SecureString -AsPlainText -Force
-    $spnCred   = New-Object System.Management.Automation.PSCredential ($effectiveAppId, $spnSecure)
-    Connect-AzAccount -ServicePrincipal -Credential $spnCred -Tenant $effectiveTenantId | Out-Null
-    if ($AzureSubscriptionID) { Set-AzContext -Subscription $AzureSubscriptionID | Out-Null }
-}
-else {
-    Write-Warning "SPN credentials not provided; falling back to user credential login (not recommended)."
-    $securePassword = $AzurePassword | ConvertTo-SecureString -AsPlainText -Force
-    $cred = New-Object System.Management.Automation.PSCredential ($AzureUserName, $securePassword)
-    Connect-AzAccount -Credential $cred | Out-Null
-    if ($AzureSubscriptionID) { Set-AzContext -Subscription $AzureSubscriptionID | Out-Null }
+# ================================
+#   Section: Download Lab Content
+# ================================
+Write-Section "Download lab content (mslearn-openai repo)"
+$labsZip = "C:\AllFiles\AllFiles.zip"
+Invoke-Retry -Script {
+    $wc = New-Object System.Net.WebClient
+    $wc.DownloadFile("https://github.com/CloudLabs-MOC/mslearn-openai/archive/refs/heads/main.zip", $labsZip)
 }
 
-$ODLuser = Get-AzADUser -DisplayName "ODL_User $DeploymentID"
-
-$ODLuserID = $ODLuser.Id
-
-Function updateVMShadowFile
-{
-#Replace vmAdminUsernameValue with VM Admin UserName in script content 
-$drivepath="C:\Users\Public\Documents"
-(Get-Content -Path "$drivepath\Shadow.ps1") | ForEach-Object {$_ -Replace "vmAdminUsernameValue", "$vmAdminUsername"} | Set-Content -Path "$drivepath\Shadow.ps1"
-#Update random password
-net user $trainerUserName $trainerUserPassword
+Function Expand-ZIPFile($file, $destination) {
+    try {
+        # Primary: COM Shell (fast)
+        $shell = New-Object -ComObject shell.application
+        $zip   = $shell.NameSpace($file)
+        foreach ($item in $zip.items()) {
+            $shell.Namespace($destination).copyhere($item, 16)  # 16 = No UI
+        }
+    } catch {
+        # Fallback: .NET ZipFile
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($file, $destination)
+    }
 }
-updateVMShadowFile
+Expand-ZIPFile -file $labsZip -destination "C:\AllFiles"
+Start-Sleep -Seconds 5
 
-Function RunModernVmValidator
-{
-cmd.exe --% /c sc create "Spektra CloudLabs VM Agent" BinPath=C:\CloudLabs\Validator\VMAgent\Spektra.CloudLabs.VMAgent.exe start= auto
-cmd.exe --% /c sc start "Spektra CloudLabs VM Agent"
+# =========================
+#   Section: Auth to Azure
+# =========================
+Write-Section "Authenticate to Azure (SPN preferred)"
+. $credsPs1
+
+$effectiveAppId     = if ($spAppId)     { $spAppId }     elseif ($env:AppID)    { $env:AppID }    else { $null }
+$effectiveAppSecret = if ($spAppSecret) { $spAppSecret } elseif ($env:AppSecret){ $env:AppSecret} else { $null }
+$effectiveTenantId  = if ($AzureTenantID){ $AzureTenantID}elseif ($env:TenantID){ $env:TenantID } else { $null }
+
+try {
+    if ($effectiveAppId -and $effectiveAppSecret -and $effectiveTenantId) {
+        Write-Host "Using Service Principal authentication…"
+        $spnSecure = $effectiveAppSecret | ConvertTo-SecureString -AsPlainText -Force
+        $spnCred   = New-Object System.Management.Automation.PSCredential ($effectiveAppId, $spnSecure)
+        Connect-AzAccount -ServicePrincipal -Credential $spnCred -Tenant $effectiveTenantId | Out-Null
+        if ($AzureSubscriptionID) { Set-AzContext -Subscription $AzureSubscriptionID | Out-Null }
+    } else {
+        Write-Warning "SPN not provided; falling back to user credential auth."
+        $securePassword = $AzurePassword | ConvertTo-SecureString -AsPlainText -Force
+        $cred = New-Object System.Management.Automation.PSCredential ($AzureUserName, $securePassword)
+        Connect-AzAccount -Credential $cred | Out-Null
+        if ($AzureSubscriptionID) { Set-AzContext -Subscription $AzureSubscriptionID | Out-Null }
+    }
 }
-RunModernVmValidator
+catch {
+    Write-Error "Azure authentication failed: $($_.Exception.Message)"
+    throw
+}
 
+# ============================
+#   Section: Lab-specific ops
+# ============================
+Write-Section "Lookup ODL user (soft-fail)"
+try {
+    $ODLuser = Get-AzADUser -DisplayName "ODL_User $DeploymentID" -ErrorAction Stop
+    $ODLuserID = $ODLuser.Id
+    Write-Host "Found ODL user: $($ODLuser.UserPrincipalName)"
+} catch {
+    Write-Warning "ODL user not found for DeploymentID '$DeploymentID'. Continuing…"
+}
+
+Write-Section "Update Shadow script (if present) & trainer password"
+$shadowPath = "C:\Users\Public\Documents\Shadow.ps1"
+if (Test-Path $shadowPath) {
+    (Get-Content $shadowPath).Replace("vmAdminUsernameValue", $vmAdminUsername) | Set-Content $shadowPath
+    Write-Host "Patched Shadow.ps1 with vmAdminUsername."
+} else {
+    Write-Warning "Shadow.ps1 not found; skipping patch."
+}
+
+if ($trainerUserName -and $trainerUserPassword) {
+    try {
+        net user $trainerUserName $trainerUserPassword | Out-Null
+        Write-Host "Trainer account password updated."
+    } catch {
+        Write-Warning "Failed to set trainer password: $($_.Exception.Message)"
+    }
+}
+
+# ==================================================
+#   Section: Start CloudLabs VM Agent (if available)
+# ==================================================
+Write-Section "Start CloudLabs VM Agent (if present)"
+$vmAgentPath = "C:\CloudLabs\Validator\VMAgent\Spektra.CloudLabs.VMAgent.exe"
+$svcName     = "Spektra CloudLabs VM Agent"
+
+if (Test-Path $vmAgentPath) {
+    try {
+        cmd.exe --% /c sc create "$svcName" BinPath="$vmAgentPath" start= auto
+    } catch {
+        Write-Warning "Service may already exist: $($_.Exception.Message)"
+    }
+    try {
+        cmd.exe --% /c sc start "$svcName"
+        Write-Host "CloudLabs VM Agent service started."
+    } catch {
+        Write-Warning "Unable to start VM Agent service: $($_.Exception.Message)"
+    }
+} else {
+    Write-Warning "VM Agent binary not found at $vmAgentPath; skipping service creation."
+}
+
+# =========================================
+#   Section: Finalize & disable runuserdata
+# =========================================
+Write-Section "Finalize and disable runuserdata"
+try { Disable-ScheduledTask -TaskName "runuserdata" -ErrorAction SilentlyContinue } catch {}
+try { Stop-ScheduledTask    -TaskName "runuserdata" -ErrorAction SilentlyContinue } catch {}
+
+Write-Section "Provisioning completed"
 Stop-Transcript
-Disable-ScheduledTask -TaskName "runuserdata"
-Stop-ScheduledTask -TaskName "runuserdata"
