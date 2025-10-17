@@ -10,7 +10,7 @@
     "DeploymentID": { "value": "GET-DEPLOYMENT-ID" },
     "trainerUserName": { "value": "instructor" },
     "trainerUserPassword": { "value": "GEN-PASSWORD" },
-    "spAppId": { "value": "PUT-YOUR-SP-APP-ID" },
-    "spAppSecret": { "value": "PUT-YOUR-SP-APP-SECRET" }
+    "spAppId": { "value": "GET-SERVICEPRINCIPAL-APPLICATION-ID" },
+    "spAppSecret": { "value": "GET-SERVICEPRINCIPAL-SECRET" }
   }
 }
