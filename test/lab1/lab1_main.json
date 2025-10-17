@@ -2,10 +2,10 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "azureUserName": {
+    "AzureUserName": {
       "type": "string"
     },
-    "azurePassword": {
+    "AzurePassword": {
       "type": "securestring"
     },
     "ODLID": {
@@ -27,12 +27,16 @@
       "type": "string"
     },
     "spAppId": {
-    "type": "string",
-    "metadata": { "description": "App registration (Client) ID for Service Principal auth" }
+      "type": "string",
+      "metadata": {
+        "description": "App registration (Client) ID for Service Principal auth"
+      }
     },
     "spAppSecret": {
-    "type": "securestring",
-    "metadata": { "description": "Client secret for Service Principal auth" }
+      "type": "securestring",
+      "metadata": {
+        "description": "Client secret for Service Principal auth"
+      }
     }
   },
   "variables": {
@@ -78,28 +82,27 @@
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]",
           "windowsConfiguration": {
-            "provisionVmAgent": "true"
+            "provisionVmAgent": true
           }
         },
         "hardwareProfile": {
-          "vmSize": "Standard_D2S_v3"
+          "vmSize": "Standard_D2s_v3"
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "Spektra",
+            "publisher": "spektra",
             "offer": "cloudlabs-windows-jumpvm",
             "sku": "win2019",
             "version": "latest"
           },
           "osDisk": {
-            "Name": "[concat(variables('LabVMName'),'-osdisk')]",
-            "createOption": "fromImage",
+            "name": "[concat(variables('LabVMName'),'-osdisk')]",
+            "createOption": "FromImage",
             "managedDisk": {
               "storageAccountType": "Premium_LRS"
             }
           },
-          "dataDisks": [
-          ]
+          "dataDisks": []
         },
         "networkProfile": {
           "networkInterfaces": [
@@ -151,8 +154,8 @@
                 "id": "[variables('subnetRef')]"
               },
               "privateIPAllocationMethod": "Dynamic",
-              "publicIpAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpAddressName'))]"
               }
             }
           }
@@ -166,7 +169,6 @@
       "name": "[variables('publicIpAddressName')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-09-01",
-      "comments": "Public IP",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Standard"
@@ -192,7 +194,7 @@
             "name": "default-allow-rdp",
             "properties": {
               "priority": 1000,
-              "protocol": "TCP",
+              "protocol": "Tcp",
               "access": "Allow",
               "direction": "Inbound",
               "sourceAddressPrefix": "*",
@@ -223,7 +225,7 @@
       "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpAddressName'))).dnsSettings.fqdn]"
     },
     "Trainer Password": {
-      "type": "String",
+      "type": "string",
       "value": "[parameters('trainerUserPassword')]"
     },
     "Region": {
