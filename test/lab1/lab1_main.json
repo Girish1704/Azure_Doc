@@ -40,7 +40,7 @@
     }
   },
   "variables": {
-    "scripturl": "https://experienceazure.blob.core.windows.net/templates/moc/mslearn-openai/scripts/psscript-openai.ps1",
+    "scripturl": "https://github.com/Girish1704/Azure_Doc/blob/main/test/lab1/lab1_power.ps1",
     "userdata": "[concat('$url = \"', variables('scripturl'),'\"; $arg = \"', variables('arg'), '\"')]",
     "arg": "[concat(variables('arg1'),variables('arg2'),variables('arg3'),variables('arg4'),variables('arg5'),variables('arg6'))]",
     "arg1": "[concat(' -AzureUserName ', parameters('AzureUserName'), ' -AzurePassword ', parameters('AzurePassword'))]",
