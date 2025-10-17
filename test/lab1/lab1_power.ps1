@@ -19,15 +19,12 @@ $newLogDir = 'C:\WindowsAzure\Logs'
 if (-not (Test-Path $newLogDir)) { New-Item -ItemType Directory -Path $newLogDir -Force | Out-Null }
 Start-Transcript -Path "$newLogDir\CloudLabsCustomScriptExtension.txt" -Append
 
-Function Write-Section([string]$msg) {
-    Write-Host ""
-    Write-Host "========== $msg ==========" -ForegroundColor Cyan
-}
+Function Write-Section([string]$msg) { Write-Host ""; Write-Host "========== $msg ==========" -ForegroundColor Cyan }
 
 Function Invoke-Retry {
     param([Parameter(Mandatory=$true)][ScriptBlock]$Script,[int]$Retries = 3,[int]$DelaySeconds = 3)
     for ($i = 1; $i -le $Retries; $i++) {
-        try { return & $Script } catch { if ($i -ge $Retries) { throw } Write-Warning "Attempt $i failed: $($_.Exception.Message). Retrying in $DelaySeconds sec…"; Start-Sleep -Seconds $DelaySeconds }
+        try { return & $Script } catch { if ($i -ge $Retries) { throw }; Write-Warning "Attempt $i failed: $($_.Exception.Message). Retrying in $DelaySeconds sec…"; Start-Sleep -Seconds $DelaySeconds }
     }
 }
 
@@ -68,6 +65,7 @@ if (-not (Test-Path $commonScript)) {
     }
 }
 . $commonScript
+
 Write-Section "Apply WindowsServerCommon; install Az PowerShell & Azure CLI"
 WindowsServerCommon
 InstallAzPowerShellModule
@@ -87,7 +85,7 @@ Expand-ZIPFile -file $labsZip -destination "C:\AllFiles"
 Start-Sleep -Seconds 5
 
 Write-Section "Authenticate to Azure (Service Principal only)"
-if ([string]::IsNullOrWhiteSpace($spAppId) -or $spAppId -match '^GET-' -or [string]::IsNullOrWhiteSpace($spAppSecret) -or [string]::IsNullOrWhiteSpace($AzureTenantID)) {
+if ([string]::IsNullOrWhiteSpace($spAppId) -or $spAppId -match '^GET-|^PUT-' -or [string]::IsNullOrWhiteSpace($spAppSecret) -or [string]::IsNullOrWhiteSpace($AzureTenantID)) {
     throw "Missing or placeholder Service Principal parameters. Provide valid spAppId, spAppSecret, and AzureTenantID."
 }
 $spnSecure = $spAppSecret | ConvertTo-SecureString -AsPlainText -Force
@@ -100,14 +98,13 @@ try { $ODLuser = Get-AzADUser -DisplayName "ODL_User $DeploymentID" -ErrorAction
 
 Write-Section "Update Shadow script (if present) & trainer password"
 $shadowPath = "C:\Users\Public\Documents\Shadow.ps1"
-if (Test-Path $shadowPath) { (Get-Content $shadowPath).Replace("vmAdminUsernameValue", $vmAdminUsername) | Set-Content $shadowPath; Write-Host "Patched Shadow.ps1 with vmAdminUsername." } else { Write-Warning "Shadow.ps1 not found; skipping patch." }
+if (Test-Path $shadowPath) { (Get-Content $shadowPath).Replace("vmAdminUsernameValue", $vmAdminUsername) | Set-Content $shadowPath } else { Write-Warning "Shadow.ps1 not found; skipping patch." }
 if ($trainerUserName -and $trainerUserPassword) {
     try {
         $user = $null
         try { $user = Get-LocalUser -Name $trainerUserName -ErrorAction Stop } catch {}
         if (-not $user) { cmd.exe /c "net user $trainerUserName $trainerUserPassword /add /y" | Out-Null } else { cmd.exe /c "net user $trainerUserName $trainerUserPassword" | Out-Null }
         cmd.exe /c "net localgroup Administrators $trainerUserName /add" | Out-Null
-        Write-Host "Trainer account ensured and added to Administrators."
     } catch { Write-Warning "Failed to ensure trainer account: $($_.Exception.Message)" }
 }
 
@@ -115,8 +112,8 @@ Write-Section "Start CloudLabs VM Agent (if present)"
 $vmAgentPath = "C:\CloudLabs\Validator\VMAgent\Spektra.CloudLabs.VMAgent.exe"
 $svcName     = "Spektra CloudLabs VM Agent"
 if (Test-Path $vmAgentPath) {
-    try { cmd.exe --% /c sc create "$svcName" BinPath="$vmAgentPath" start= auto } catch { Write-Warning "Service may already exist: $($_.Exception.Message)" }
-    try { cmd.exe --% /c sc start "$svcName"; Write-Host "CloudLabs VM Agent service started." } catch { Write-Warning "Unable to start VM Agent service: $($_.Exception.Message)" }
+    try { cmd.exe --% /c sc create "$svcName" BinPath="$vmAgentPath" start= auto } catch {}
+    try { cmd.exe --% /c sc start "$svcName" } catch {}
 } else { Write-Warning "VM Agent binary not found at $vmAgentPath; skipping service creation." }
 
 Write-Section "Finalize and disable runuserdata"
